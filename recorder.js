@@ -6,17 +6,9 @@ let stream = null;
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.name == "startRecording") {
     startRecording();
-    sendResponse({
-      received: true,
-    });
-    return true;
   }
   if (message.name == "stopRecording") {
     stopRecording(message.body.tabId);
-    sendResponse({
-      received: true,
-    });
-    return true;
   }
 });
 
@@ -36,6 +28,19 @@ const convertBlobToBase64 = async (blob) =>
     };
   });
 
+/**
+ * Show screenshot download links
+ */
+function createScreenshotLink(blob) {
+  const downloadLink = document.createElement("a");
+  downloadLink.href = URL.createObjectURL(blob);
+  const d = new Date();
+  const dd = Math.floor(d.getTime() / 1000) + "-screen.png";
+  const linkText = document.createTextNode(dd);
+  downloadLink.appendChild(linkText);
+  downloadLink.download = dd;
+  return;
+}
 /**
  * Captures images from stream, converts to base64 and sends message to service worker when complete.
  * Needs to be split up to be more functional/dry.
@@ -63,14 +68,9 @@ async function createImage(track) {
   const blob = await new Promise((res) => canvas.toBlob(res));
   const base64 = await convertBlobToBase64(blob);
 
-  // download link for images
-  // const downloadLink = document.createElement("a");
-  // downloadLink.href = URL.createObjectURL(blob);
-  // const d = new Date();
-  // const dd = Math.floor(d.getTime() / 1000) + "-screen.png";
-  // const linkText = document.createTextNode(dd);
-  // downloadLink.appendChild(linkText);
-  // downloadLink.download = dd;
+  //screenshot link
+  createScreenshotLink(blob);
+  
   chrome.runtime.sendMessage({ type: "test", payload: base64 });
   return;
 }
@@ -85,18 +85,19 @@ async function startRecording() {
   async function loop() {
     while (stream) {
       const track = stream.getVideoTracks()[0];
-      createImage(track);
+      if (track) createImage(track);
       await delay(3000);
     }
   }
   try {
-    stream = await navigator.mediaDevices.getDisplayMedia({
-      video: { mediaSource: "screen" },
-    });
-    if (stream) loop();
+    if (!stream) {
+      stream = await navigator.mediaDevices.getDisplayMedia({
+        video: { mediaSource: "screen" },
+      });
+      await loop();
+    }
   } catch (err) {
-    console.log("error:", err);
-    return;
+    console.log("Error starting recording:", err);
   }
 }
 

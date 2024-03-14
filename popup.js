@@ -3,7 +3,6 @@
  */
 const startRecording = () => {
   chrome.runtime.sendMessage({ type: 'start' });
-  
 };
 
 /**

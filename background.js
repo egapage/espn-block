@@ -69,7 +69,7 @@ async function stopRecording() {
     name: "stopRecording",
     body: {
       tabId: tab.id,
-    }
+    },
   });
 }
 
@@ -82,16 +82,22 @@ async function startRecording() {
     lastFocusedWindow: true,
     currentWindow: true,
   });
-  await chrome.tabs.create({
+  const { id } = await chrome.tabs.create({
     url: chrome.runtime.getURL("recorder.html"),
     pinned: true,
     active: true,
   });
+
   sourceTabId = tab.id;
-  chrome.tabs.onUpdated.addListener(async function listener(tabId, info) {
-    await chrome.tabs.sendMessage(tabId, {
-      name: "startRecording",
-    });
+
+  chrome.tabs.onUpdated.addListener(async (tabId, info, tab) => {
+    try {
+      await chrome.tabs.sendMessage(id, {
+        name: "startRecording",
+      });
+    } catch (err) {
+      // ignore error as listener fires before tab is created
+    }
   });
 }
 
@@ -134,9 +140,13 @@ function diffImages(capturedImage) {
  * @param {boolean} muted State obtained from handleMute function
  */
 async function toggleMuteState(muted) {
-  const tab = await chrome.tabs.get(sourceTabId);
-  await chrome.tabs.update(sourceTabId, { muted });
-  console.log(`Tab ${tab.id} is ${muted ? "muted" : "unmuted"}`);
+  try {
+    const tab = await chrome.tabs.get(sourceTabId);
+    await chrome.tabs.update(sourceTabId, { muted });
+    console.log(`Tab ${tab.id} is ${muted ? "muted" : "unmuted"}`);
+  } catch (err) {
+    console.log(err);
+  }
 }
 
 /**
