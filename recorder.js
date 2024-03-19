@@ -8,7 +8,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     startRecording();
   }
   if (message.name == "stopRecording") {
-    stopRecording(message.body.tabId);
+    stopRecording(message.body.tabId, message.body.sourceTabId);
   }
 });
 
@@ -30,6 +30,8 @@ const convertBlobToBase64 = async (blob) =>
 
 /**
  * Show screenshot download links
+ * 
+ * @param {object} blob image blob.
  */
 function createScreenshotLink(blob) {
   const downloadLink = document.createElement("a");
@@ -41,6 +43,7 @@ function createScreenshotLink(blob) {
   downloadLink.download = dd;
   return;
 }
+
 /**
  * Captures images from stream, converts to base64 and sends message to service worker when complete.
  * Needs to be split up to be more functional/dry.
@@ -68,7 +71,7 @@ async function createImage(track) {
   const blob = await new Promise((res) => canvas.toBlob(res));
   const base64 = await convertBlobToBase64(blob);
 
-  //screenshot link
+  // screenshot link - disable, only used for testing
   createScreenshotLink(blob);
   
   chrome.runtime.sendMessage({ type: "test", payload: base64 });
@@ -83,9 +86,15 @@ async function startRecording() {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
   async function loop() {
-    while (stream) {
+    let readyState = true;
+    while (readyState) {
       const track = stream.getVideoTracks()[0];
-      if (track) createImage(track);
+      if (track.readyState !== "live") {
+        track.stop();
+        readyState = false;
+        return;
+      }
+      await createImage(track);
       await delay(3000);
     }
   }
@@ -97,15 +106,17 @@ async function startRecording() {
       await loop();
     }
   } catch (err) {
-    console.log("Error starting recording:", err);
+    console.log("Recording error: ", err);
   }
 }
 
 /**
- * Stop tab recording.  Can be used for cleanup.
+ * Stop tab recording.
  * @param {string} tabId identifier of this tab being closed
  */
-async function stopRecording(tabId) {
+async function stopRecording(tabId, sourceTabId) {
+  const muted = false;
+  await chrome.tabs.update(sourceTabId, { muted });
   chrome.tabs.remove(tabId);
   if (stream) stream.getTracks().forEach((track) => track.stop());
   console.log("Stream stopped and tab closed.");

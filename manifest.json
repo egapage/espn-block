@@ -1,8 +1,8 @@
 {
     "manifest_version": 3,
-    "name": "ESPN Blocker",
-    "description": "Mutes video during ESPN commercial.  Currently in beta.",
-    "version": "0.3",
+    "name": "ESPN Mute",
+    "description": "Mutes video during ESPN commercial.",
+    "version": "0.90.0",
     "action": {
       "default_popup": "popup.html",
       "default_icon": "icon.png"
@@ -16,5 +16,5 @@
         "service_worker": "background.js",
         "type": "module"
     },
-    "permissions": ["tabs", "activeTab", "desktopCapture", "offscreen", "scripting"]
+    "permissions": ["tabs", "activeTab", "desktopCapture"]
   }

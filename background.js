@@ -60,6 +60,17 @@ let image1,
 })();
 
 /**
+ * Usage guide on installation
+ */
+
+chrome.runtime.onInstalled.addListener(_details => {
+  chrome.tabs.create({
+    url: chrome.runtime.getURL("./guide/index.html"),
+    active: true,
+  });
+});
+
+/**
  * Stop recording by sending message to recorder.
  */
 async function stopRecording() {
@@ -69,6 +80,7 @@ async function stopRecording() {
     name: "stopRecording",
     body: {
       tabId: tab.id,
+      sourceTabId: sourceTabId,
     },
   });
 }
@@ -90,7 +102,7 @@ async function startRecording() {
 
   sourceTabId = tab.id;
 
-  chrome.tabs.onUpdated.addListener(async (tabId, info, tab) => {
+  chrome.tabs.onUpdated.addListener(async (_tabId, _info, _tab) => {
     try {
       await chrome.tabs.sendMessage(id, {
         name: "startRecording",

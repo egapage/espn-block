@@ -15,5 +15,4 @@ const stopRecording = () => {
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('startRecordingButton').addEventListener('click', startRecording);
   document.getElementById('stopRecordingButton').addEventListener('click', stopRecording);
-
 });
