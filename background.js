@@ -142,7 +142,7 @@ function diffImages(capturedImage) {
     percentages.push(percentage);
     console.log(percentage + "%");
   }
-  const match = percentages.filter((v) => v < 20);
+  const match = percentages.filter((percentage) => percentage < 20);
   return match.length > 0 ? true : false;
 }
 

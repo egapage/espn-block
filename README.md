@@ -14,15 +14,15 @@ npm install
 
 Go to the Chrome tab with the video playing, click on the ESPN Mute icon in extensions to open the menu:
 
-![image info](./instructions/step1.png)
+![image info](./guide/step1.png)
 
 Click on **Mute ESPN** which will bring up Chrome's screen share.  Select the tab with the video and click **Share**:
 
-![image info](./instructions/step2.png)
+![image info](./guide/step2.png)
 
 Click on the fullscreen icon on the video to expand the size to fill the window (this is important for image matching).
 
-![image info](./instructions/step3.png)
+![image info](./guide/step3.png)
 
 ### Disable Mute ESPN
 

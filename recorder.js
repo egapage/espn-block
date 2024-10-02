@@ -116,8 +116,15 @@ async function startRecording() {
  */
 async function stopRecording(tabId, sourceTabId) {
   const muted = false;
-  await chrome.tabs.update(sourceTabId, { muted });
-  chrome.tabs.remove(tabId);
-  if (stream) stream.getTracks().forEach((track) => track.stop());
-  console.log("Stream stopped and tab closed.");
+  try {
+    await chrome.tabs.update(sourceTabId, { muted });
+    chrome.tabs.remove(tabId);
+    if (stream) stream.getTracks().forEach((track) => track.stop());
+    console.log("Stream stopped and tab closed.");
+  }
+  catch(err) {
+    console.log(err);
+  }
+  
+  
 }
